@@ -77,17 +77,81 @@ class CalculatorView:
 
             )
     def on_click(self, value):
-        current = self.display.get()
-        print("current --->>>", current) 
+        current_value = self.display.get()
+        current_new_value = f"{current_value}{value}"
+        print("current_value --->>>", current_value) 
         print("value --->>>", value)
+        print("current_new_value --->>>", current_new_value)
+        
+        
+        
         if value == "⌫":
-            new_value = str(current[1:])
+            new_value = str(current_value[1:])
             self.display.delete(0, tk.END)
             self.display.insert(0, new_value)
         elif value == "AC":
             self.display.delete(0, tk.END)
-        else: 
-            self.display.insert(0, str(value))
+        elif value == "%":
+            split_result = self.split_calculation(current_value) or {}
+            last_operator = split_result.get('last_operator')
+            left_value = split_result.get('left_value')
+            right_value = split_result.get('right_value')
+            last_char = split_result.get('last_char')
+            print("last_operator ->", last_operator)
+            print("left_value ->", left_value)
+            print("right_value ->", right_value)
+            print("last_char ->", last_char)
+            print("====")
+            
+            if last_char == "%":
+                if last_operator:
+                    inner_split_result = self.split_calculation(left_value) or {}
+                    inner_last_operator = inner_split_result.get('last_operator') 
+                    inner_left_value = inner_split_result.get('left_value') 
+                    inner_right_value = inner_split_result.get('right_value') 
+                    print("inner_last_operator->", inner_last_operator)
+                    print("inner_left_value->", inner_left_value)
+                    print("inner_right_value->", inner_right_value)
+                    new_value = f"{inner_left_value}{last_operator}({right_value}"
+                
+                pass
+                
+            self.display.insert("end", str(value))
+            
+        elif value == "+/-":
+            
+            pass
+        else:
+            self.display.insert("end", str(value))
+            
+    def split_calculation(self, value):
+        operators = ['+', '-', '*', '/', '%']
+
+        last_pos = -1
+        last_operator = None
+        last_char = value[-1:]
+
+        for op in operators:
+            pos = value.rfind(op)
+            
+            if pos > last_pos:
+                last_pos = pos
+                last_operator = op
+
+        if last_operator:
+            left = value[:last_pos]
+            right = value[last_pos + 1:]
+            
+            
+            return {
+                "last_operator": last_operator, 
+                "left_value": left, 
+                "right_value": right,
+                'last_char': last_char
+                }
+            
+        return {'last_char': last_char}
+            
             
             
         
