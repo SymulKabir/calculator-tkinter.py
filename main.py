@@ -5,21 +5,19 @@ from app.ui.calculator_view import CalculatorView
 def main():
     root = tk.Tk()
     root.title("Calculator")
-    
 
-    width = 350
-    height = 500
+    root.resizable(False, False)  # optional: prevents stretching
 
-    # Get screen dimensions
+    CalculatorView(root)
+
+    root.update_idletasks()
+
     screen_width = root.winfo_screenwidth()
 
-    # Position at top-right corner
-    x = screen_width - width
+    x = screen_width - root.winfo_reqwidth()
     y = 0
 
-    root.geometry(f"{width}x{height}+{x}+{y}")
-    
-    CalculatorView(root)
+    root.geometry(f"+{x}+{y}") 
 
     root.mainloop()
 
