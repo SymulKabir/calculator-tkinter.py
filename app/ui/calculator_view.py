@@ -1,17 +1,20 @@
 from functools import partial
 import math
+from textwrap import fill
 import tkinter as tk
-
+from app.config.symbols import SYMBOL_MAP
+from app.config.colors import BG_COLOR, TEXT_COLOR, PRIMARY_COLOR
 
 class CalculatorView:
     def __init__(self, root):
+        
         
         # Full Screen Wrapper Widget
         self.root = tk.Frame(
             root,  
             padx=15,
             pady=5,
-            bg='red'
+            bg=BG_COLOR
         )
         self.root.pack(
             fill="both",
@@ -19,27 +22,54 @@ class CalculatorView:
             
         )
         
+        
         # Calculator Result Display
-        self.container = tk.Frame(
-            self.root,
-            bg="#e4e4e4",
+        self.result_display_container = tk.Frame(
+            self.root, 
+            bg=BG_COLOR
+        )
+        
+        self.result_display_container.pack(
+            fill='x',
+            padx=4,
+        ) 
+        self.calculation_display = tk.Label(
+            self.result_display_container,
+            font=("Arial", 17),
+            anchor="e",
+            fg="#666666",
+            # bg="#FFFFFF",
+            bg=BG_COLOR,
+            bd=0,
+            relief="flat", 
+            highlightthickness=0
+        )
+        self.calculation_display.pack(
+            fill="x",
             padx=2,
             pady=2
         )
-        
-        self.container.pack(
-            fill='x',
-        )
         self.display = tk.Entry(
-            self.container,
-            font=("Arial", 18),
-            justify="right"
-
+            self.result_display_container,
+            font=("Arial", 19),
+            justify="right",
+            bd=0,
+            relief="flat",
+            highlightthickness=0,
+            highlightbackground=BG_COLOR,
+            highlightcolor=BG_COLOR, 
+            bg=BG_COLOR,
+            fg=TEXT_COLOR,
+            takefocus=0,
+            validate="key",
         )
         self.display.pack(
             fill="x", 
-            ipady=12
+            ipady=5
         )
+        self.display.bind("<Key>", self.on_keypress)
+        
+        
         # Calculator Buttons
         buttons = [
             {"label": "⌫"}, {"label": "AC"}, {"label": "%"}, {"label": "÷"},
@@ -49,8 +79,9 @@ class CalculatorView:
             {"label": "+/-"}, {"label": "0"}, {"label": "."}, {"label": "="}
         ]
         
-        btn_frame = tk.Frame(self.root)
+        btn_frame = tk.Frame(self.root, bg=BG_COLOR)
         btn_frame.pack(fill="x")
+  
         
         for col in range(4):
             btn_frame.grid_columnconfigure(col, weight=1)
@@ -59,102 +90,161 @@ class CalculatorView:
             item = 4
             row = math.floor(index / item)
             collumn = index % item
+            bg = "#454a4a"
+            if collumn == 3:
+                bg = "#ff8b00"
+            elif row == 0:
+                bg = "#717575"
                 
-            button = tk.Button(
-                btn_frame,   
+            # button = tk.Button(
+            #     btn_frame,   
+            #     text=btn["label"],
+            #     font=("Arial", 18),
+            #     height=2,
+            #     command=lambda value = btn["label"]: self.on_click(value)
+            # )
+
+            # button.grid(
+            #     row=row,
+            #     column=collumn,
+            #     padx=2,
+            #     pady=2,
+            #     sticky="nsew",
+
+            # )
+            self.circle_button(
+                btn_frame,
                 text=btn["label"],
-                font=("Arial", 18),
-                height=2,
+                row=row,
+                col=collumn,
+                bg=bg, 
                 command=lambda value = btn["label"]: self.on_click(value)
             )
-
-            button.grid(
-                row=row,
-                column=collumn,
-                padx=2,
-                pady=2,
-                sticky="nsew",
-
-            )
-    def on_click(self, value):
-        current_value = self.display.get()
-        current_new_value = f"{current_value}{value}"
-        print("current_value --->>>", current_value) 
-        print("value --->>>", value)
-        print("current_new_value --->>>", current_new_value)
-        
-        
-        
-        if value == "⌫":
-            new_value = str(current_value[1:])
-            self.display.delete(0, tk.END)
-            self.display.insert(0, new_value)
-        elif value == "AC":
-            self.display.delete(0, tk.END)
-        elif value == "%":
-            split_result = self.split_calculation(current_value) or {}
-            last_operator = split_result.get('last_operator')
-            left_value = split_result.get('left_value')
-            right_value = split_result.get('right_value')
-            last_char = split_result.get('last_char')
-            print("last_operator ->", last_operator)
-            print("left_value ->", left_value)
-            print("right_value ->", right_value)
-            print("last_char ->", last_char)
-            print("====")
-            
-            if last_char == "%":
-                if last_operator:
-                    inner_split_result = self.split_calculation(left_value) or {}
-                    inner_last_operator = inner_split_result.get('last_operator') 
-                    inner_left_value = inner_split_result.get('left_value') 
-                    inner_right_value = inner_split_result.get('right_value') 
-                    print("inner_last_operator->", inner_last_operator)
-                    print("inner_left_value->", inner_left_value)
-                    print("inner_right_value->", inner_right_value)
-                    new_value = f"{inner_left_value}{last_operator}({right_value}"
-                
-                pass
-                
-            self.display.insert("end", str(value))
-            
-        elif value == "+/-":
-            
-            pass
-        else:
-            self.display.insert("end", str(value))
-            
-    def split_calculation(self, value):
-        operators = ['+', '-', '*', '/', '%']
-
-        last_pos = -1
-        last_operator = None
-        last_char = value[-1:]
-
-        for op in operators:
-            pos = value.rfind(op)
-            
-            if pos > last_pos:
-                last_pos = pos
-                last_operator = op
-
-        if last_operator:
-            left = value[:last_pos]
-            right = value[last_pos + 1:]
-            
-            
-            return {
-                "last_operator": last_operator, 
-                "left_value": left, 
-                "right_value": right,
-                'last_char': last_char
-                }
-            
-        return {'last_char': last_char}
-            
-            
-            
-        
-        
-        
     
+    def circle_button(self, parent, text, row, col, bg="#717575", command=None):
+        size = 90
+        radius = size // 2
+
+        canvas = tk.Canvas(
+            parent,
+            width=size,
+            height=size,
+            bg=BG_COLOR,
+            # bg="white",
+            highlightthickness=0
+        )
+        canvas.grid(row=row, column=col, padx=5, pady=5)
+
+        # circle
+        circle = canvas.create_oval(
+            5, 5, size-5, size-5,
+            fill=bg,
+            outline=""
+        )
+
+        # text
+        canvas.create_text(
+            radius,
+            radius,
+            text=text,
+            font=("Arial", 19),
+            fill=TEXT_COLOR
+        )
+
+        def on_click(event):
+            if command:
+                command(text)
+
+        canvas.bind("<Button-1>", on_click)
+
+        return canvas
+                
+    def on_keypress(self, event): 
+        char = event.char
+        # allow control keys (backspace, etc.)
+        if event.keysym in ("BackSpace", "Left", "Right", "Delete"):
+            return
+
+        # allow digits
+        if char.isdigit() or char == ".":
+            return
+
+        # replace operators
+        if char in SYMBOL_MAP:
+            self.display.insert(tk.END, SYMBOL_MAP[char])
+            return "break"
+
+        # block everything else
+        return "break"
+
+    def on_click(self, value):
+        current = self.display.get()
+        calculation_display_value = self.calculation_display.cget("text")
+        if calculation_display_value:
+            self.calculation_display.config(text="") 
+
+        if value == "AC":
+            self.display.delete(0, tk.END)
+
+        elif value == "⌫":
+            self.display.delete(0, tk.END)
+            self.display.insert(0, current[:-1])
+
+        elif value == "=":
+            try:
+                expression = current
+                self.calculation_display.config(text=expression)
+
+                expression = expression.replace("×", "*")
+                expression = expression.replace("÷", "/")
+                expression = expression.replace("−", "-")
+
+                result = eval(expression)
+
+                self.display.delete(0, tk.END)
+                self.display.insert(0, str(result))
+
+            except Exception:
+                self.display.delete(0, tk.END)
+                self.display.insert(0, "Error")
+
+        elif value == "%":
+            try:
+                expression = current
+
+                expression = expression.replace("×", "*")
+                expression = expression.replace("÷", "/")
+                expression = expression.replace("−", "-")
+
+                result = eval(expression) / 100
+
+                self.display.delete(0, tk.END)
+                self.display.insert(0, str(result))
+
+            except Exception:
+                self.display.delete(0, tk.END)
+                self.display.insert(0, "Error")
+
+        elif value == "+/-":
+            try:
+                if current.startswith("-"):
+                    current = current[1:]
+                else:
+                    current = "-" + current
+
+                self.display.delete(0, tk.END)
+                self.display.insert(0, current)
+
+            except Exception:
+                pass
+
+        else:
+            self.display.insert(tk.END, value)
+            
+    def validate_input(self, value_if_allowed):
+        allowed_chars = "0123456789++--*x/%. " 
+
+        if value_if_allowed == "":
+            return True
+
+        return all(char in allowed_chars for char in value_if_allowed)
