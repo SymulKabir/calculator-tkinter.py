@@ -12,9 +12,9 @@ class TitleBarView:
         btn_frame = tk.Frame(title_bar, bg="#0048ba")
         btn_frame.pack(side="left", padx=10)
 
-        self.make_circle(btn_frame, "#ff5f57", lambda: self.close_app(root))
-        self.make_circle(btn_frame, "#febc2e", lambda: self.minimize_app(root))
-        self.make_circle(btn_frame, "#28c840", lambda: None)
+        self.make_circle(btn_frame, "#ff5f57",  lambda: self.close_app(root), text="\u2715",)
+        self.make_circle(btn_frame, "#febc2e", lambda: self.minimize_app(root), text="\u2500",)
+        self.make_circle(btn_frame, "#28c840", lambda: None, text="\u25A1")
 
         # TITLE
         title_label = tk.Label(
@@ -39,7 +39,7 @@ class TitleBarView:
         root.bind("<Map>", lambda e: self.restore_window(e, root))
         
         
-    def make_circle(self, parent, color, command):
+    def make_circle(self, parent, color, command, text):
         size = 24  # IMPORTANT: bigger canvas
 
         btn = tk.Canvas(
@@ -57,6 +57,16 @@ class TitleBarView:
             fill=color,
             outline=""
         )
+        
+            # Center text
+        txt = btn.create_text(
+            size // 2,
+            size // 2,
+            text=text,
+            fill="#000000",
+            font=("Arial", 10, "bold")
+        )
+
 
         # -------------------
         # hover (ONLY outline)
